@@ -1,54 +1,49 @@
-const { generateToken } = require('../config/jwtToken');
-const User = require('../models/userModel');
-const asyncHandler = require("express-async-handler")
-
+const { generateToken } = require("../config/jwtToken");
+const User = require("../models/userModel");
+const asyncHandler = require("express-async-handler");
 
 // Create User
-const createUser = asyncHandler(async(req, res) => {
-    const email = req.body.email;
-    const findUser = await User.findOne({email: email});
+const createUser = asyncHandler(async (req, res) => {
+  const email = req.body.email;
+  const findUser = await User.findOne({ email: email });
 
-    if (!findUser) {
-        // Create new user
-        const newUser = await User.create(req.body);
-        res.json(newUser);
-
-    }else{
-        throw new Error('User Already Exist');
-    }
+  if (!findUser) {
+    // Create new user
+    const newUser = await User.create(req.body);
+    res.json(newUser);
+  } else {
+    throw new Error("User Already Exist");
+  }
 });
 
 // User Login
-const loginUser = asyncHandler(async(req, res) => {
-    const {email, password} = req.body;
-    // user exist or not
-    const findUser = await User.findOne({email});
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  // user exist or not
+  const findUser = await User.findOne({ email });
 
-    if (findUser && await findUser.isPasswordMatched(password)) {
-        res.json({
-            _id: findUser?._id,
-            firstname: findUser?.firstname,
-            lastname: findUser?.lastname,
-            email: findUser?.email,
-            mobile: findUser?.mobile,
-            token: generateToken(findUser?.id),
-        });
-    }else{
-        
-        throw new Error("Invalid Credentials");
-    
-    }
-    
-})
-
-// Get all users
-const getallUser = asyncHandler(async(req, res) => {
-    try {
-        const getUsers = await User.find();
-        res.json(getUsers);
-    } catch (error) {
-        throw new Error(error);
-    }
+  if (findUser && (await findUser.isPasswordMatched(password))) {
+    res.json({
+      _id: findUser?._id,
+      firstname: findUser?.firstname,
+      lastname: findUser?.lastname,
+      email: findUser?.email,
+      mobile: findUser?.mobile,
+      token: generateToken(findUser?.id),
+    });
+  } else {
+    throw new Error("Invalid Credentials");
+  }
 });
 
-module.exports = {createUser, loginUser, getallUser}
+// Get all users
+const getallUser = asyncHandler(async (req, res) => {
+  try {
+    const getUsers = await User.find();
+    res.json(getUsers);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+module.exports = { createUser, loginUser, getallUser };
