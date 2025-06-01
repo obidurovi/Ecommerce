@@ -15,5 +15,5 @@ router.post("/login", loginUser);
 router.get("/all-users", getallUser);
 router.get("/:id", authMiddleware, isAdmin, getaUser);
 router.delete("/:id", deleteaUser);
-router.put("/:id", updatedUser);
+router.put("/edit-user", authMiddleware, updatedUser);
 module.exports = router;
