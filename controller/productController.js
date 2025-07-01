@@ -2,6 +2,7 @@ const Product = require("../models/productModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 
+// Function to create a new product
 const createProduct = asyncHandler(async (req, res) => {
   try {
     if (req.body.title) {
@@ -14,6 +15,23 @@ const createProduct = asyncHandler(async (req, res) => {
   }
 });
 
+// Function to update an existing product
+const updateProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (req.body.title) {
+      req.body.slug = slugify(req.body.title);
+    }
+    const updateProduct = await Product.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    res.json(updateProduct);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+// Function to get a single product by ID
 const getAProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
@@ -24,6 +42,7 @@ const getAProduct = asyncHandler(async (req, res) => {
   }
 });
 
+// Function to get all products
 const getAllProduct = asyncHandler(async (req, res) => {
   try {
     const getAllProduct = await Product.find();
@@ -33,4 +52,4 @@ const getAllProduct = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { createProduct, getAProduct, getAllProduct };
+module.exports = { createProduct, getAProduct, getAllProduct, updateProduct };
