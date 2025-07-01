@@ -77,11 +77,24 @@ const getAllProduct = asyncHandler(async (req, res) => {
       query.sort("-createdAt");
     }
 
+    // Handle fields
     if (req.query.fields) {
       const fields = req.query.fields.split(",").join(" ");
       query.select(fields);
     } else {
       query.select("-__v");
+    }
+
+    // Handle pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+    query = query.skip((page - 1) * limit).limit(limit);
+    if (req.query.page) {
+      const totalProducts = await Product.countDocuments();
+      if (skip >= totalProducts) {
+        return res.status(404).json({ message: "No more products available" });
+      }
     }
 
     const product = await query;
