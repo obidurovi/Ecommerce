@@ -56,6 +56,7 @@ const getAProduct = asyncHandler(async (req, res) => {
 // Function to get all products
 const getAllProduct = asyncHandler(async (req, res) => {
   try {
+    // Handle pagination
     const queryObject = { ...req.query };
     const excludedFields = ["page", "sort", "limit", "fields"];
     excludedFields.forEach((field) => delete queryObject[field]);
@@ -66,7 +67,15 @@ const getAllProduct = asyncHandler(async (req, res) => {
       (match) => `$${match}`
     );
 
-    const query = Product.find(JSON.parse(queryStr));
+    let query = Product.find(JSON.parse(queryStr));
+
+    // Handle sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      query.sort(sortBy);
+    } else {
+      query.sort("-createdAt");
+    }
 
     const product = await query;
     res.json(product);
