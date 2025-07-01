@@ -31,6 +31,17 @@ const updateProduct = asyncHandler(async (req, res) => {
   }
 });
 
+// Function to delete a product
+const deleteProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deleteProduct = await Product.findByIdAndDelete(id);
+    res.json(deleteProduct);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 // Function to get a single product by ID
 const getAProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -52,4 +63,10 @@ const getAllProduct = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { createProduct, getAProduct, getAllProduct, updateProduct };
+module.exports = {
+  createProduct,
+  getAProduct,
+  getAllProduct,
+  updateProduct,
+  deleteProduct,
+};
