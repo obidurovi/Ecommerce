@@ -35,4 +35,22 @@ const updateBlog = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { createBlog, updateBlog };
+// Function to get a blog by ID & increment view count
+const getBlog = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  try {
+    const getBlog = await Blog.findById(id);
+    await Blog.findByIdAndUpdate(
+      id,
+      {
+        $inc: { numViews: 1 },
+      },
+      { new: true }
+    );
+    res.json(getBlog);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+module.exports = { createBlog, updateBlog, getBlog };
