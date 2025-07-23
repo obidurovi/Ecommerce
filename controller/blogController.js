@@ -159,6 +159,90 @@ const likeBlog = asyncHandler(async (req, res) => {
   }
 });
 
+// dislike a blog
+const dislikeBlog = asyncHandler(async (req, res) => {
+  const { blogId } = req.body;
+
+  if (!blogId) {
+    return res.status(400).json({ message: "Blog ID is required" });
+  }
+
+  try {
+    // Validate MongoDB ID
+    try {
+      validateMongodbId(blogId);
+    } catch (error) {
+      return res.status(400).json({ message: "Invalid blog ID format" });
+    }
+
+    // Find the blog
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    // Check user authentication
+    const loginUserId = req?.user?._id;
+    if (!loginUserId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    // Initialize arrays if they don't exist
+    if (!blog.likes) blog.likes = [];
+    if (!blog.disLikes) blog.disLikes = [];
+
+    // Check if already liked/disliked
+    const alreadyLiked = blog.likes.find(
+      (id) => id.toString() === loginUserId.toString()
+    );
+
+    const alreadyDisliked = blog.disLikes.find(
+      (id) => id.toString() === loginUserId.toString()
+    );
+
+    // Process like/dislike actions
+    if (alreadyLiked) {
+      const updatedBlog = await Blog.findByIdAndUpdate(
+        blogId,
+        {
+          $pull: { likes: loginUserId },
+          isLiked: false,
+        },
+        { new: true }
+      );
+      return res.json(updatedBlog);
+    }
+
+    if (alreadyDisliked) {
+      const updatedBlog = await Blog.findByIdAndUpdate(
+        blogId,
+        {
+          $pull: { disLikes: loginUserId },
+          isDisliked: false,
+        },
+        { new: true }
+      );
+      return res.json(updatedBlog);
+    } else {
+      const updatedBlog = await Blog.findByIdAndUpdate(
+        blogId,
+        {
+          $push: { disLikes: loginUserId },
+          isDisliked: true,
+        },
+        { new: true }
+      );
+      return res.json(updatedBlog);
+    }
+  } catch (error) {
+    console.error("Dislike blog error:", error);
+    return res.status(500).json({
+      message: "Error processing dislike action",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = {
   createBlog,
   updateBlog,
@@ -166,4 +250,5 @@ module.exports = {
   getAllBlogs,
   deleteBlog,
   likeBlog,
+  dislikeBlog,
 };
